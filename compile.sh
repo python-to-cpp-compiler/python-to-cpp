@@ -1,2 +1,2 @@
 #!/bin/sh
-flex main.l && gcc lex.yy.c
+flex main.l && g++ lex.yy.c
