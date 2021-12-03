@@ -67,9 +67,9 @@
 			v = nullptr;
 		}
 
-	}
+	};
 
-	map<std::string, SymbolTableRow*> symbol_table;
+	std::map<std::string, SymbolTableRow*> symbol_table;
 
 %}
 
@@ -81,7 +81,7 @@ variable_alphabet [0-9a-zA-Z|_]
 new_line \n
 delim [ \t]+
 the_double {digit}+(\.{digit}+)(E[+\-]?{digit}+)?
-the_integer {digit}+(E[+\-]?{digit}+)? 
+the_integer {digit}+(E[+\-]?{digit}+)?
 identifire {letter}{variable_alphabet}*
 string \"(.)*\"
 
@@ -291,7 +291,7 @@ string \"(.)*\"
 
 
 
-{the_double} { 
+{the_double} {
 
 	yylval.d = std::stod(yytext);
 
@@ -316,7 +316,7 @@ string \"(.)*\"
 	#ifdef DEBUG_MODE
 		std::cout << "string found: " << yylval.c << std::endl;
 	#endif
-		return STRING
+		return STRING;
 
 }
 
@@ -327,14 +327,14 @@ string \"(.)*\"
 	#ifdef DEBUG_MODE
 		std::cout << "VARIABLE found: " << yylval.c << std::endl;
 	#endif
-		return VARIABLE
+		return VARIABLE;
 
 }
 {new_line} {
 	#ifdef DEBUG_MODE
 		std::cout << " new_line found " << std::endl;
 	#endif
-	
+
 	return NEW_LINE;}
 
 %%
