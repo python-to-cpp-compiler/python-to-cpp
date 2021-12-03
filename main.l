@@ -6,16 +6,33 @@
 	#define DEBUG_MODE
 
     enum Token {
+		OPEN_BRACKET,
+		CLOSE_BRACKET,
+		OPEN_PARANTEZ,
+		CLOSE_PARANTEZ,
+		COLONS,
+
         // types
         INTEGER,
         FLOAT,
         STRING,
 
+		//operator
+		RELOPE,
+		ASSIGN,
+		SUM,
+		DIVIDE,
+		MULTIPLY,
+		SUBTRACT,
+		REMINDER,
+
         // conditions
         IF,
         ELSE,
         ELIF,
-
+		AND,
+		OR,
+		NOT,
         WHILE,
         // loops
         FOR,
@@ -27,7 +44,7 @@
 		// new_line
 		NEW_LINE,
 
-		NONE_TYPE,
+		NONE_TYPE
     };
 
     union Value {
@@ -62,82 +79,277 @@ letter [a-zA-Z]
 variable_alphabet [0-9a-zA-Z|_]
 
 new_line \n
+delim [ \t]+
+the_double {digit}+(\.{digit}+)(E[+\-]?{digit}+)?
+the_integer {digit}+(E[+\-]?{digit}+)? 
+identifire {letter}{variable_alphabet}*
+string \"(.)*\"
 
 %%
 
 
-[+|-]?{digit}+ {
-    yylval.i = atoi(yytext);
+
+"(" {
+	#ifdef DEBUG_MODE
+		std::cout << "open parantez found " << std::endl;
+	#endif
+		return OPEN_PARANTEZ;
+	}
+")" {
+	#ifdef DEBUG_MODE
+		std::cout << "close parantez found " << std::endl;
+	#endif
+		return CLOSE_PARANTEZ;
+	}
+"{" {
+	#ifdef DEBUG_MODE
+		std::cout << "open bracket found " << std::endl;
+	#endif
+		return OPEN_BRACKET;
+	}
+"}" {
+	#ifdef DEBUG_MODE
+		std::cout << "close bracket found " << std::endl;
+	#endif
+		return CLOSE_BRACKET;
+	}
+":" {
+	#ifdef DEBUG_MODE
+		std::cout << "colons found " << std::endl;
+	#endif
+		return COLONS;
+	}
+
+
+
+"!=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "not equal found " << std::endl;
+	#endif
+		return RELOPE;
+		}
+"==" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "equal found " << std::endl;
+	#endif
+		return RELOPE;
+		}
+">=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "greater equal  found " << std::endl;
+	#endif
+		return RELOPE;
+		}
+"<=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "less equal found " << std::endl;
+	#endif
+		return RELOPE;
+		}
+">" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "greater  found " << std::endl;
+	#endif
+		return RELOPE;
+		}
+"<" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "less found " << std::endl;
+	#endif
+		return RELOPE;
+		}
+
+
+
+"=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "assign found " << std::endl;
+	#endif
+		return ASSIGN;
+		}
+"-=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "assign subtract found " << std::endl;
+	#endif
+		return ASSIGN;
+		}
+"+=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "assign sum found " << std::endl;
+	#endif
+		return ASSIGN;
+		}
+"*=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "assign multiply found " << std::endl;
+	#endif
+		return ASSIGN;
+		}
+"/=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "assign divide found " << std::endl;
+	#endif
+		return ASSIGN;
+		}
+"%=" {
+	yylval.c = yytext;
+	#ifdef DEBUG_MODE
+		std::cout << "assign reminder found " << std::endl;
+	#endif
+		return ASSIGN;
+		}
+
+"+" {
+	#ifdef DEBUG_MODE
+		std::cout <<" sum found " << std::endl;
+	#endif
+		return SUM;
+		}
+
+"-" {
+	#ifdef DEBUG_MODE
+		std::cout << " subtract found " << std::endl;
+	#endif
+		return SUBTRACT;
+		}
+"*" {
+	#ifdef DEBUG_MODE
+		std::cout << " multiply found " << std::endl;
+	#endif
+		return MULTIPLY;
+		}
+"/" {
+	#ifdef DEBUG_MODE
+		std::cout << " divide found " << std::endl;
+	#endif
+		return DIVIDE;
+		}
+"%" {
+	#ifdef DEBUG_MODE
+		std::cout << " reminder found " << std::endl;
+	#endif
+		return REMINDER;
+		}
+
+
+
+"while" {
+	#ifdef DEBUG_MODE
+		std::cout << " while found " << std::endl;
+	#endif
+		return WHILE;
+		}
+"for" {
+	#ifdef DEBUG_MODE
+		std::cout << " for found " << std::endl;
+	#endif
+		return FOR;
+		}
+"continue" {
+	#ifdef DEBUG_MODE
+		std::cout << " continue found " << std::endl;
+	#endif
+		return CONTINUE;
+		}
+"break " {
+	#ifdef DEBUG_MODE
+		std::cout << " break  found " << std::endl;
+	#endif
+		return BREAK;
+		}
+
+
+"and" {
+	#ifdef DEBUG_MODE
+		std::cout << " and found " << std::endl;
+	#endif
+		return FOR;
+		}
+"or" {
+	#ifdef DEBUG_MODE
+		std::cout << " or found " << std::endl;
+	#endif
+		return OR;
+		}
+"not " {
+	#ifdef DEBUG_MODE
+		std::cout << " not  found " << std::endl;
+	#endif
+		return NOT;
+		}
+
+
+
+{the_double} { 
+
+	yylval.d = std::stod(yytext);
+
+	#ifdef DEBUG_MODE
+		std::cout << "float found: " << yylval.d << std::endl;
+	#endif
+		return FLOAT;
+}
+
+{the_integer} {
+    yylval.i = ((int) std::stod(yytext));
 #ifdef DEBUG_MODE
 	std::cout << "integer found: " << yylval.i << std::endl;
 #endif
     return INTEGER;
 }
 
-[+|-]?{digit}+\.{digit}+ { // todo for the first digit it can be used * instead of +
-    yylval.d = 0;
-	int i = 0;
-	double e = 1;
-	bool dot_found = false;
-	bool neg = false;
+{string} {
+	//todo remove "" at begin and end of text
+	yylval.c = yytext;
 
-	while (i < yyleng){
-		// check +/-
-		if (yytext[i] == '-'){
-			neg = true;
-			i++;
-			continue;
-		}
-		else if (yytext[i] == '+'){
-			i++;
-			continue;
-		}
-
-		//check dot.
-		if (yytext[i] == '.'){
-			dot_found = true;
-			i++;
-			continue;
-		}
-
-		// after finding dot add 1 to exponential for each number
-		if (dot_found)
-			e *= 10;
-
-		// shift number; add other digit to it.
-		yylval.d *= 10.;
-		yylval.d += yytext[i] - '0';
-		i++;
-
-#ifdef DEBUG_MODE
-		/* std::cout << "float yyl.d: " << yylval.d << std::endl; */
-#endif
-	}
-
-	yylval.d = (yylval.d / e) * (neg ? -1 : 1);
-
-#ifdef DEBUG_MODE
-	std::cout << "float found: " << yylval.d << std::endl;
-#endif
-    return FLOAT;
-}
-{letter}[{variable_alphabet}] {
+	#ifdef DEBUG_MODE
+		std::cout << "string found: " << yylval.c << std::endl;
+	#endif
+		return STRING
 
 }
-{new_line} {return NEW_LINE;}
+
+{identifire} {
+
+	yylval.c = yytext;
+
+	#ifdef DEBUG_MODE
+		std::cout << "VARIABLE found: " << yylval.c << std::endl;
+	#endif
+		return VARIABLE
+
+}
+{new_line} {
+	#ifdef DEBUG_MODE
+		std::cout << " new_line found " << std::endl;
+	#endif
+	
+	return NEW_LINE;}
 
 %%
 
+
 int main(int argc, char* argv[])
 {
-	if(argc > 1)
-	{
-		FILE *fp = fopen(argv[1], "r");
-		if(fp)
-			yyin = fp;
-	}
+	// if(argc > 1)
+	// {
+	// 	FILE *fp = fopen(argv[1], "r");
+	// 	if(fp)
+	// 		yyin = fp;
+	// }
 
-	while (1) // todo remove it
-		yylex();
+	// while (1) // todo remove it
+	yylex();
 	return 1;
 }
