@@ -2,50 +2,50 @@
 %{
 	#include <iostream>
 	#include <map>
-
+	#include "lexheader.h"
 	#define DEBUG_MODE
 
-    enum Token {
-		OPEN_BRACKET,
-		CLOSE_BRACKET,
-		OPEN_PARANTEZ,
-		CLOSE_PARANTEZ,
-		COLONS,
+    // enum Token {
+	// 	OPEN_BRACKET,
+	// 	CLOSE_BRACKET,
+	// 	OPEN_PARANTEZ,
+	// 	CLOSE_PARANTEZ,
+	// 	COLONS,
 
-        // types
-        INTEGER,
-        FLOAT,
-        STRING,
+    //     // types
+    //     INTEGER,
+    //     FLOAT,
+    //     STRING,
 
-		//operator
-		RELOPE,
-		ASSIGN,
-		SUM,
-		DIVIDE,
-		MULTIPLY,
-		SUBTRACT,
-		REMINDER,
+	// 	//operator
+	// 	RELOPE,
+	// 	ASSIGN,
+	// 	SUM,
+	// 	DIVIDE,
+	// 	MULTIPLY,
+	// 	SUBTRACT,
+	// 	REMINDER,
 
-        // conditions
-        IF,
-        ELSE,
-        ELIF,
-		AND,
-		OR,
-		NOT,
-        WHILE,
-        // loops
-        FOR,
-        BREAK,
-        CONTINUE,
+    //     // conditions
+    //     IF,
+    //     ELSE,
+    //     ELIF,
+	// 	AND,
+	// 	OR,
+	// 	NOT,
+    //     WHILE,
+    //     // loops
+    //     FOR,
+    //     BREAK,
+    //     CONTINUE,
 
-		VARIABLE,
+	// 	VARIABLE,
 
-		// new_line
-		NEW_LINE,
+	// 	// new_line
+	// 	NEW_LINE,
 
-		NONE_TYPE
-    };
+	// 	NONE_TYPE
+    // };
 
     union Value {
         int i;
@@ -57,7 +57,7 @@
 	class SymbolTableRow{
 	private:
 		int id;
-		Token type;
+		int type;
 		Value* v; // todo, required?
 
 	public:
@@ -282,7 +282,7 @@ string \"(.)*\"
 	#endif
 		return OR;
 		}
-"not " {
+"not" {
 	#ifdef DEBUG_MODE
 		std::cout << " not  found " << std::endl;
 	#endif
@@ -337,6 +337,8 @@ string \"(.)*\"
 
 	return NEW_LINE;}
 
+
+
 %%
 
 
@@ -349,7 +351,7 @@ int main(int argc, char* argv[])
 	// 		yyin = fp;
 	// }
 
-	// while (1) // todo remove it
-	yylex();
+	while (1) // todo remove it
+		yylex();
 	return 1;
 }
