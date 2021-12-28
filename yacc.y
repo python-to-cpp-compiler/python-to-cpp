@@ -1,22 +1,33 @@
 %{
 void yyerror (char *s);
 int yylex();
+
+
 #include <stdio.h>     /* C declarations used in actions */
 #include <stdlib.h>
 #include <ctype.h>
+
+#define OUTD(X) fprintf(out, "%f", X)
+#define OUTS(X) fprintf(out, "%s", X)
+#define OUTN() fprintf(out, "\n")
+#define OUTT() fprintf(out, "t%d", make_new_id())
+
+
 int symbols[52];
 int symbolVal(char symbol);
 void updateSymbolVal(char symbol, int val);
+extern FILE * yyin;
+FILE* out;
 %}
 
-%union {double num; char* id;}         /* Yacc definitions */
+%union {double num; char id[100];}         /* Yacc definitions */
 
-%start statements
+%start start_state
 
-%token if
-%token else
-%token for
-%token while
+%token if_token
+%token else_token
+%token for_token
+%token while_token
 %token range
 %token eq
 %token neq
@@ -24,10 +35,21 @@ void updateSymbolVal(char symbol, int val);
 %token gteq
 %token ls
 %token lseq
+%token not
+%token and
+%token or
+%token new_line
+%token end_of_file
+%token sadder
+%token ssubber
+%token smult
+%token sdivd
+%token break_token
+%token continue_token
 
 %token exit_command
 %token <num> number
-%token <id> id
+%token <id> identifire
 
 
 /* %type <num> line exp term
@@ -35,105 +57,96 @@ void updateSymbolVal(char symbol, int val);
 
 %%
 
-
-statements  : assign new_line statements    {printf("statements assign");}
-            | if_state statements                 {printf("statements if");}
-            | for_state statements                {printf("statements for");}
-            | while_state statements              {printf("statements while");}
-            | new_line statements           {printf("statements new_line");}
+start_state : statements {;}
             ;
 
-assing      : id '=' expr                    {printf("assign id = exp");}
+statements  : assign {OUTS(";");} statements    {printf("YACC: statements assign\n");}
+            | relops {OUTS(";");} statements    {printf("YACC: statements relop\n");}
+            | if_token_state statements                 {printf("YACC: statements if_token\n");}
+            | for_token_state statements                {printf("YACC: statements for_token\n");}
+            | while_token_state statements              {printf("YACC: statements while_token\n");}
+            | new_line {OUTN();} statements           {printf("YACC: statements new_line\n");}
+            | end_of_file                   {printf("YACC: statements end of file");exit(EXIT_SUCCESS);}
+            | break_token {OUTS(";");} statements              {printf("YACC: statements break_token\n");}
+            | continue_token {OUTS(";");} statements           {printf("YACC: statements continue_token\n");}
             ;
 
-expr        : expr '+' term                  {printf("expr + term");}
-            | expr '-' term                  {printf("expr - term");}
-            | term                           {printf("expr term");}
+assign      : identifire {OUTS($1);printf("YACC: id: %s\n", $1);} '=' {OUTS("=");} expr                    {printf("YACC: assign id = exp\n");}
+            | identifire {OUTS($1);} sadder {OUTS("+=");} expr                 {printf("YACC: assign sadder expr\n");}
+            | identifire {OUTS($1);} ssubber {OUTS("-=");} expr                {printf("YACC: assign ssubber expr\n");}
+            | identifire {OUTS($1);} smult {OUTS("*=");} expr                  {printf("YACC: assign smult expr\n");}
+            | identifire {OUTS($1);} sdivd {OUTS("/=");} expr                  {printf("YACC: assign sdivd expr\n");}
             ;
 
-term        : term '*' factor                {printf("term * factor");}
-            | term '/' factor                {printf("term / factor");}
-            | factor                         {printf("term factor");}
+expr        : expr '+' {OUTS("+");} term                  {printf("YACC: expr + term\n");}
+            | expr '-' {OUTS("-");} term                  {printf("YACC: expr - term\n");}
+            | term                           {printf("YACC: expr term\n");}
             ;
 
-factor      : value                          {printf("factor value");}
-            | '(' expr ')'                   {printf("factor (expr)");}
+term        : term '*' {OUTS("*");} factor                {printf("YACC: term * factor\n");}
+            | term '/' {OUTS("/");} factor                {printf("YACC: term / factor\n");}
+            | factor                         {printf("YACC: term factor\n");}
             ;
 
-value       : number                          {printf("value digit");}
-            | id                             {printf("value id");}
+factor      : value                          {printf("YACC: factor value\n");}
+            | '(' {OUTS("(");} expr ')' {OUTS(")");}        {printf("YACC: factor (expr)\n");}
             ;
 
-if_state    : if relops ':' '{' statements '}' else_state    {printf("if if");}
+value       : number                          {OUTD($1); printf("YACC: value digit\n");}
+            | identifire                      {OUTS($1); printf("YACC: value id\n");}
             ;
 
-else_state  : else ':' '{' statements '}'              {printf("else else");}
-            | {printf("else not else");}
+if_token_state    : if_token relops ':' '{' statements '}' else_token_state    {printf("YACC: if_token if_token\n");}
             ;
 
-while_state : while relops ':' '{' statements '}'      {printf("while while");}
+else_token_state  : else_token ':' '{' statements '}'              {printf("YACC: else_token else_token\n");}
+            | {printf("YACC: else_token not else_token\n");}
             ;
 
-for_state         : for range '(' epxr ',' epxr ',' epxr ')' ':' '{' statements '}'  {printf("for for");}
+while_token_state : while_token relops ':' '{' statements '}'      {printf("YACC: while_token while_token\n");}
             ;
 
-relops      : relop                                         {printf("relops relop");}
-            | relop and relops                            {printf("relops relop and");}
-            | relop or relops                             {printf("relops relop or");}
-            | '(' relops ')'                                {printf("relops (relops)");}
+for_token_state         : for_token range '(' expr ',' expr ',' expr ')' ':' '{' statements '}'  {printf("YACC: for_token for_token\n");}
             ;
 
-relop       : "not" relop                                   {printf("relop not relop");}
-            | relo                                          {printf("relop relo");}
+relops      : relop                                         {printf("YACC: relops relop\n");}
+            | relop and {OUTS("&&");} relops                              {printf("YACC: relops relop and\n");}
+            | relop or {OUTS("||");}relops                               {printf("YACC: relops relop or\n");}
+            | '(' {OUTS("(");}  relops ')'{OUTS(")");}//todo error with ()                                {printf("YACC: relops (relops)\n");}
             ;
 
-relo        : expr rel expr                                  {printf("relo expr rel expr");}
+relop       : not {OUTS("!");} relop                                   {printf("YACC: relop not relop\n");}
+            | relo                                          {printf("YACC: relop relo\n");}
             ;
 
-rel         : eq                                           {printf("rel ==");}
-            | gteq                                           {printf("rel >=");}
-            | lseq                                           {printf("rel <=");}
-            | gt                                           {printf("rel >");}
-            | ls                                            {printf("rel <");}
-            | neq                                           {printf("rel !=");}
+relo        : expr rel expr                                  {printf("YACC: relo expr rel expr\n");}
+            ;
+
+rel         : eq   {OUTS("==");}                                          {printf("YACC: rel ==\n");}
+            | gteq {OUTS(">=");}                                          {printf("YACC: rel >=\n");}
+            | lseq {OUTS("<=");}                                          {printf("YACC: rel <=\n");}
+            | gt   {OUTS(">");}                                          {printf("YACC: rel >\n");}
+            | ls   {OUTS("<");}                                          {printf("YACC: rel <\n");}
+            | neq  {OUTS("!=");}                                          {printf("YACC: rel !=\n");}
             ;
 
 
 %%                     /* C code */
 
-int computeSymbolIndex(char token)
-{
-	int idx = -1;
-	if(islower(token)) {
-		idx = token - 'a' + 26;
-	} else if(isupper(token)) {
-		idx = token - 'A';
-	}
-	return idx;
+long make_new_id(){
+    static long i = 0;
+    return i++;
 }
 
-/* returns the value of a given symbol */
-int symbolVal(char symbol)
-{
-	int bucket = computeSymbolIndex(symbol);
-	return symbols[bucket];
+int main (int argc, char* argv[]) {
+    if(argc > 1)
+    {
+    	yyin = fopen(argv[1], "r");
+    }
+    else
+        printf("YACC: no file input\n");
+    out = fopen("result.c", "w");
+    return yyparse ();
 }
 
-/* updates the value of a given symbol */
-void updateSymbolVal(char symbol, int val)
-{
-	int bucket = computeSymbolIndex(symbol);
-	symbols[bucket] = val;
-}
-
-int main (void) {
-	/* init symbol table */
-	int i;
-	for(i=0; i<52; i++) {
-		symbols[i] = 0;
-	}
-
-	return yyparse ( );
-}
-
-void yyerror (char *s) {fprintf (stderr, "%s\n", s);}
+void yyerror (char *s) {fprintf (stderr, "ERR: %s\n", s);}

@@ -1,75 +1,11 @@
 %option noyywrap
 %{
-	#include <iostream>
-	#include <map>
-	#include "lexheader.h"
+	#include "y.tab.h"
 	#define DEBUG_MODE
+	int yylex();
+	void yyerror (char *s);
 
-    // enum Token {
-	// 	OPEN_BRACKET,
-	// 	CLOSE_BRACKET,
-	// 	OPEN_PARANTEZ,
-	// 	CLOSE_PARANTEZ,
-	// 	COLONS,
 
-    //     // types
-    //     INTEGER,
-    //     FLOAT,
-    //     STRING,
-
-	// 	//operator
-	// 	RELOPE,
-	// 	ASSIGN,
-	// 	SUM,
-	// 	DIVIDE,
-	// 	MULTIPLY,
-	// 	SUBTRACT,
-	// 	REMINDER,
-
-    //     // conditions
-    //     IF,
-    //     ELSE,
-    //     ELIF,
-	// 	AND,
-	// 	OR,
-	// 	NOT,
-    //     WHILE,
-    //     // loops
-    //     FOR,
-    //     BREAK,
-    //     CONTINUE,
-
-	// 	VARIABLE,
-
-	// 	// new_line
-	// 	NEW_LINE,
-
-	// 	NONE_TYPE
-    // };
-
-    union Value {
-        int i;
-        double d;
-        char* c;
-    };
-    union Value yylval;
-
-	class SymbolTableRow{
-	private:
-		int id;
-		int type;
-		Value* v; // todo, required?
-
-	public:
-		SymbolTableRow(){
-			id = 0;
-			type = NONE_TYPE;
-			v = nullptr;
-		}
-
-	};
-
-	std::map<std::string, SymbolTableRow*> symbol_table;
 
 %}
 
@@ -80,8 +16,7 @@ variable_alphabet [0-9a-zA-Z|_]
 
 new_line \n
 delim [ \t]+
-the_double {digit}+(\.{digit}+)(E[+\-]?{digit}+)?
-the_integer {digit}+(E[+\-]?{digit}+)?
+the_double ([+-])?{digit}+(\.{digit}+)?(E[+\-]?{digit}+)?
 identifire {letter}{variable_alphabet}*
 string \"(.)*\"
 
@@ -91,258 +26,234 @@ string \"(.)*\"
 
 "(" {
 	#ifdef DEBUG_MODE
-		std::cout << "open parantez found " << std::endl;
+		/* //std::cout << "open parantez found " << std::endl; */
 	#endif
-		return OPEN_PARANTEZ;
+		return '(';
 	}
 ")" {
 	#ifdef DEBUG_MODE
-		std::cout << "close parantez found " << std::endl;
+		/* //std::cout << "close parantez found " << std::endl; */
 	#endif
-		return CLOSE_PARANTEZ;
+		return ')';
 	}
 "{" {
 	#ifdef DEBUG_MODE
-		std::cout << "open bracket found " << std::endl;
+		//std::cout << "open bracket found " << std::endl;
 	#endif
-		return OPEN_BRACKET;
+		return '{';
 	}
 "}" {
 	#ifdef DEBUG_MODE
-		std::cout << "close bracket found " << std::endl;
+		//std::cout << "close bracket found " << std::endl;
 	#endif
-		return CLOSE_BRACKET;
+		return '}';
 	}
 ":" {
 	#ifdef DEBUG_MODE
-		std::cout << "colons found " << std::endl;
+		//std::cout << "colons found " << std::endl;
 	#endif
-		return COLONS;
+		return ':';
 	}
 
 
 
 "!=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "not equal found " << std::endl;
+		//std::cout << "not equal found " << std::endl;
 	#endif
-		return RELOPE;
+		return neq;
 		}
 "==" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "equal found " << std::endl;
+		//std::cout << "equal found " << std::endl;
 	#endif
-		return RELOPE;
+		return eq;
 		}
 ">=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "greater equal  found " << std::endl;
+		//std::cout << "greater equal  found " << std::endl;
 	#endif
-		return RELOPE;
+		return gteq;
 		}
 "<=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "less equal found " << std::endl;
+		//std::cout << "less equal found " << std::endl;
 	#endif
-		return RELOPE;
+		return lseq;
 		}
 ">" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "greater  found " << std::endl;
+		//std::cout << "greater  found " << std::endl;
 	#endif
-		return RELOPE;
+		return gt;
 		}
 "<" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "less found " << std::endl;
+		//std::cout << "less found " << std::endl;
 	#endif
-		return RELOPE;
+		return ls;
 		}
 
 
 
 "=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "assign found " << std::endl;
+		printf("LEX: %s\n", yytext);
 	#endif
-		return ASSIGN;
+		return '=';
 		}
 "-=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "assign subtract found " << std::endl;
+		//std::cout << "assign subtract found " << std::endl;
 	#endif
-		return ASSIGN;
+		return ssubber;
 		}
 "+=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "assign sum found " << std::endl;
+		//std::cout << "assign sum found " << std::endl;
 	#endif
-		return ASSIGN;
+		return sadder;
 		}
 "*=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "assign multiply found " << std::endl;
+		//std::cout << "assign multiply found " << std::endl;
 	#endif
-		return ASSIGN;
+		return smult;
 		}
 "/=" {
-	yylval.c = yytext;
+
 	#ifdef DEBUG_MODE
-		std::cout << "assign divide found " << std::endl;
+		//std::cout << "assign divide found " << std::endl;
 	#endif
-		return ASSIGN;
-		}
-"%=" {
-	yylval.c = yytext;
-	#ifdef DEBUG_MODE
-		std::cout << "assign reminder found " << std::endl;
-	#endif
-		return ASSIGN;
+		return sdivd;
 		}
 
 "+" {
 	#ifdef DEBUG_MODE
-		std::cout <<" sum found " << std::endl;
+		//std::cout <<" sum found " << std::endl;
 	#endif
-		return SUM;
+		return '+';
 		}
 
 "-" {
 	#ifdef DEBUG_MODE
-		std::cout << " subtract found " << std::endl;
+		//std::cout << " subtract found " << std::endl;
 	#endif
-		return SUBTRACT;
+		return '-';
 		}
 "*" {
 	#ifdef DEBUG_MODE
-		std::cout << " multiply found " << std::endl;
+		//std::cout << " multiply found " << std::endl;
 	#endif
-		return MULTIPLY;
+		return '*';
 		}
 "/" {
 	#ifdef DEBUG_MODE
-		std::cout << " divide found " << std::endl;
+		//std::cout << " divide found " << std::endl;
 	#endif
-		return DIVIDE;
+		return '/';
 		}
-"%" {
-	#ifdef DEBUG_MODE
-		std::cout << " reminder found " << std::endl;
-	#endif
-		return REMINDER;
-		}
-
-
-
+"if" {
+	return if_token;
+}
+"else" {
+	return else_token;
+}
 "while" {
 	#ifdef DEBUG_MODE
-		std::cout << " while found " << std::endl;
+		//std::cout << " while found " << std::endl;
 	#endif
-		return WHILE;
+		return while_token;
 		}
 "for" {
 	#ifdef DEBUG_MODE
-		std::cout << " for found " << std::endl;
+		//std::cout << " for found " << std::endl;
 	#endif
-		return FOR;
+		return for_token;
 		}
 "continue" {
 	#ifdef DEBUG_MODE
-		std::cout << " continue found " << std::endl;
+		//std::cout << " continue found " << std::endl;
 	#endif
-		return CONTINUE;
+		return continue_token;
 		}
-"break " {
+"break" {
 	#ifdef DEBUG_MODE
-		std::cout << " break  found " << std::endl;
+		//std::cout << " break  found " << std::endl;
 	#endif
-		return BREAK;
+		return break_token;
 		}
 
 
 "and" {
 	#ifdef DEBUG_MODE
-		std::cout << " and found " << std::endl;
+		//std::cout << " and found " << std::endl;
 	#endif
-		return FOR;
+		return and;
 		}
 "or" {
 	#ifdef DEBUG_MODE
-		std::cout << " or found " << std::endl;
+		//std::cout << " or found " << std::endl;
 	#endif
-		return OR;
+		return or;
 		}
 "not" {
 	#ifdef DEBUG_MODE
-		std::cout << " not  found " << std::endl;
+		//std::cout << " not  found " << std::endl;
 	#endif
-		return NOT;
+		return not;
 		}
 
 
 
 {the_double} {
 
-	yylval.d = std::stod(yytext);
+	yylval.num = atof(yytext);
 
 	#ifdef DEBUG_MODE
-		std::cout << "float found: " << yylval.d << std::endl;
+		printf("LEX: double: %f\n", yylval.num);
 	#endif
-		return FLOAT;
-}
-
-{the_integer} {
-    yylval.i = ((int) std::stod(yytext));
-#ifdef DEBUG_MODE
-	std::cout << "integer found: " << yylval.i << std::endl;
-#endif
-    return INTEGER;
-}
-
-{string} {
-	//todo remove "" at begin and end of text
-	yylval.c = yytext;
-
-	#ifdef DEBUG_MODE
-		std::cout << "string found: " << yylval.c << std::endl;
-	#endif
-		return STRING;
-
+		return number;
 }
 
 {identifire} {
 
-	yylval.c = yytext;
+	strcpy(yylval.id, yytext);
 
 	#ifdef DEBUG_MODE
-		std::cout << "VARIABLE found: " << yylval.c << std::endl;
+		printf("LEX: identifire: %s\n", yylval.id);
 	#endif
-		return VARIABLE;
+		return identifire;
 
 }
 {new_line} {
 	#ifdef DEBUG_MODE
-		std::cout << " new_line found " << std::endl;
+		printf("LEX: newline\n");
 	#endif
 
-	return NEW_LINE;}
+	return new_line;
+}
+
+<<EOF>>   {
+	return end_of_file;
+}
 
 
 
 %%
 
 
-int main(int argc, char* argv[])
+/* int main(int argc, char* argv[])
 {
 	// if(argc > 1)
 	// {
@@ -351,7 +262,7 @@ int main(int argc, char* argv[])
 	// 		yyin = fp;
 	// }
 
-	while (1) // todo remove it
+	while (1)
 		yylex();
 	return 1;
-}
+} */
