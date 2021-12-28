@@ -26,31 +26,31 @@ string \"(.)*\"
 
 "(" {
 	#ifdef DEBUG_MODE
-		/* //std::cout << "open parantez found " << std::endl; */
+		/* printf("open parantez found " ); */
 	#endif
 		return '(';
 	}
 ")" {
 	#ifdef DEBUG_MODE
-		/* //std::cout << "close parantez found " << std::endl; */
+		/* printf("close parantez found " ); */
 	#endif
 		return ')';
 	}
 "{" {
 	#ifdef DEBUG_MODE
-		//std::cout << "open bracket found " << std::endl;
+		printf("open bracket found " );
 	#endif
 		return '{';
 	}
 "}" {
 	#ifdef DEBUG_MODE
-		//std::cout << "close bracket found " << std::endl;
+		printf("close bracket found " );
 	#endif
 		return '}';
 	}
 ":" {
 	#ifdef DEBUG_MODE
-		//std::cout << "colons found " << std::endl;
+		printf("colons found " );
 	#endif
 		return ':';
 	}
@@ -60,42 +60,42 @@ string \"(.)*\"
 "!=" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "not equal found " << std::endl;
+		printf("not equal found " );
 	#endif
 		return neq;
 		}
 "==" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "equal found " << std::endl;
+		printf("equal found " );
 	#endif
 		return eq;
 		}
 ">=" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "greater equal  found " << std::endl;
+		printf("greater equal  found " );
 	#endif
 		return gteq;
 		}
 "<=" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "less equal found " << std::endl;
+		printf("less equal found " );
 	#endif
 		return lseq;
 		}
 ">" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "greater  found " << std::endl;
+		printf("greater  found " );
 	#endif
 		return gt;
 		}
 "<" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "less found " << std::endl;
+		printf("less found " );
 	#endif
 		return ls;
 		}
@@ -112,54 +112,54 @@ string \"(.)*\"
 "-=" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "assign subtract found " << std::endl;
+		printf("assign subtract found " );
 	#endif
 		return ssubber;
 		}
 "+=" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "assign sum found " << std::endl;
+		printf("assign sum found " );
 	#endif
 		return sadder;
 		}
 "*=" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "assign multiply found " << std::endl;
+		printf("assign multiply found " );
 	#endif
 		return smult;
 		}
 "/=" {
 
 	#ifdef DEBUG_MODE
-		//std::cout << "assign divide found " << std::endl;
+		printf("assign divide found " );
 	#endif
 		return sdivd;
 		}
 
 "+" {
 	#ifdef DEBUG_MODE
-		//std::cout <<" sum found " << std::endl;
+		//std::cout <<" sum found " );
 	#endif
 		return '+';
 		}
 
 "-" {
 	#ifdef DEBUG_MODE
-		//std::cout << " subtract found " << std::endl;
+		printf(" subtract found " );
 	#endif
 		return '-';
 		}
 "*" {
 	#ifdef DEBUG_MODE
-		//std::cout << " multiply found " << std::endl;
+		printf(" multiply found " );
 	#endif
 		return '*';
 		}
 "/" {
 	#ifdef DEBUG_MODE
-		//std::cout << " divide found " << std::endl;
+		printf(" divide found " );
 	#endif
 		return '/';
 		}
@@ -171,45 +171,50 @@ string \"(.)*\"
 }
 "while" {
 	#ifdef DEBUG_MODE
-		//std::cout << " while found " << std::endl;
+		printf(" while found " );
 	#endif
 		return while_token;
 		}
 "for" {
 	#ifdef DEBUG_MODE
-		//std::cout << " for found " << std::endl;
+		printf(" for found " );
 	#endif
 		return for_token;
 		}
 "continue" {
 	#ifdef DEBUG_MODE
-		//std::cout << " continue found " << std::endl;
+		printf(" continue found " );
 	#endif
 		return continue_token;
 		}
 "break" {
 	#ifdef DEBUG_MODE
-		//std::cout << " break  found " << std::endl;
+		printf(" break  found " );
 	#endif
 		return break_token;
 		}
-
+"in" {
+	#ifdef DEBUG_MODE
+		printf(" in  found " );
+	#endif
+		return in_token;
+		}
 
 "and" {
 	#ifdef DEBUG_MODE
-		//std::cout << " and found " << std::endl;
+		printf(" and found " );
 	#endif
 		return and;
 		}
 "or" {
 	#ifdef DEBUG_MODE
-		//std::cout << " or found " << std::endl;
+		printf(" or found " );
 	#endif
 		return or;
 		}
 "not" {
 	#ifdef DEBUG_MODE
-		//std::cout << " not  found " << std::endl;
+		printf(" not  found " );
 	#endif
 		return not;
 		}
