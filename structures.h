@@ -20,6 +20,8 @@ struct CalcList {
     char* tmp;
 };
 void help_print_CalcList(struct CalcList* calc);
+struct List* insert_in_tree_if_not_exist(struct Tree* tree, char* id);
+struct List* find_by_id_in_tree(struct Tree* tree, char* id);
 
 struct CalcList* insert(struct CalcList* left, struct CalcList* right, char *op, double value, char* id, char* tmp) {
     struct CalcList* new_val = (struct CalcList*)malloc(sizeof(struct CalcList));
@@ -29,37 +31,80 @@ struct CalcList* insert(struct CalcList* left, struct CalcList* right, char *op,
     new_val->value = value;
     new_val->id = id;
     new_val->tmp = tmp;
-    help_print_CalcList(new_val);
     return new_val;
 }
 
-char* calculate(struct CalcList* calc) {
-    if(calc == NULL){}
-    char* res;
-    if (calc->op == NULL) {
-        if (calc->id == NULL){
-            res = (char*)malloc(sizeof(char)*(32+strlen(calc->tmp)));
-            sprintf(res, "%s=%f;\n", calc->tmp, calc->value);
-            return res;
+
+void free_calclist(struct CalcList* item){
+    if(item->op == NULL){
+        if(item->id != NULL){
+            free(item->id);
         }
-        else {
-            res = (char*)malloc(sizeof(char)*(10+strlen(calc->tmp)+strlen(calc->id)));
-            sprintf(res, "%s=%s;\n", calc->tmp, calc->id);
-            return res;
-        }
+        
+    }else{
+        free_calclist(item->left);
+        free_calclist(item->right);
+        free(item->op);
     }
 
-    char *r1 = calculate(calc->left);
-    char *r2 = calculate(calc->right);
+    free(item);
+}
+
+char* calculate(struct CalcList* calc,struct Tree* tree) {
+    char* doubleDeclartion = "";
+    int size = 0;
+    char* res;
+
+    
+    if (calc->op == NULL) {
+        if(find_by_id_in_tree(tree,calc->tmp) == NULL){
+                insert_in_tree_if_not_exist(tree,calc->tmp);
+                size = 10;
+                doubleDeclartion = "double ";
+            }
+
+        if (calc->id == NULL){
+            
+            size += 40+strlen(calc->tmp);
+            res = (char*)malloc(sizeof(char)*size);
+          
+            sprintf(res, "%s%s=%f;\n",doubleDeclartion, calc->tmp, calc->value);
+            
+            
+        }
+        else {
+            char* declerId = "";
+            if(find_by_id_in_tree(tree,calc->id) == NULL){
+                insert_in_tree_if_not_exist(tree,calc->id);
+                size+= (10+strlen(calc->id));
+                declerId = (char*)malloc(10+strlen(calc->id));
+                sprintf(declerId ,"double %s;\n",calc->id);
+            }
+
+            size+= (10+strlen(calc->tmp)+strlen(calc->id));
+            res = (char*)malloc(sizeof(char)*size);
+            sprintf(res, "%s%s%s=%s;\n", declerId,doubleDeclartion,calc->tmp, calc->id);
+            
+        }
+        return res;
+    }
+
+    char *r1 = calculate(calc->left,tree);
+    char *r2 = calculate(calc->right,tree);
 
     
 
-    int size = strlen(r1) + strlen(r2) + strlen(calc->left->tmp) + strlen(calc->right->tmp) + strlen(calc->op) + strlen(calc->tmp) + 10;
-
+    size = strlen(r1) + strlen(r2) + strlen(calc->left->tmp) + strlen(calc->right->tmp) + strlen(calc->op) + strlen(calc->tmp) + 10;
+    if(find_by_id_in_tree(tree,calc->tmp) == NULL){
+        insert_in_tree_if_not_exist(tree,calc->tmp);
+        doubleDeclartion = "double ";
+        size += 10;
+        }
     res = (char*)malloc(sizeof(char)*size);
+    
     res[0] = 0;
 
-    sprintf(res, "%s%s%s = %s %s %s;\n", r1, r2, calc->tmp, calc->left->tmp, calc->op, calc->right->tmp);
+    sprintf(res, "%s%s%s %s = %s %s %s;\n", r1, r2,doubleDeclartion,calc->tmp, calc->left->tmp, calc->op, calc->right->tmp);
 
     return res;
 
@@ -91,20 +136,19 @@ void help_print_CalcList(struct CalcList* calc){
 
 
 struct List* find_by_id_in_tree(struct Tree* tree, char* id){
+    
     if (tree == NULL){
-        printf("tree is null\n");
         return NULL;
     }
 
     struct List* tmp = tree->table;
     while(tmp != NULL){
-        if (strcmp(tmp->id, id)){ 
-            printf("find value\n");
+     
+        if (strcmp(tmp->id, id) == 0){ 
             return tmp;
         }
         tmp = tmp->next;
     }
-    printf("go to parent\n");
     return find_by_id_in_tree(tree->parent, id);
 }
 
@@ -115,7 +159,7 @@ struct Tree* make_tree(struct Tree* tree){
     struct Tree* new_tree = (struct Tree*)malloc(sizeof(struct Tree));
 
     new_tree->parent = tree;
-
+    new_tree->table = NULL;
     return new_tree;
 }
 
@@ -158,8 +202,9 @@ struct List* insert_in_tree_if_not_exist(struct Tree* tree, char* id){
         tree->table = new;
         return new;
     }
-    while (tmp->next != NULL) tmp = tmp->next;
-
+    while (tmp->next != NULL) {
+        tmp = tmp->next;
+        }
     tmp->next = new;
     return new;
 

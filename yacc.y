@@ -17,8 +17,11 @@ void rest_temp();
 #define OUTT() fprintf(out, "t%d", make_new_id())
 #define OUTDV(X) fprintf(out, "double %s;\n",X)
 
-int symbols[52];
-int symbolVal(char symbol);
+
+struct Tree* table;
+
+
+void insertIdIfnotExist(char * theId);
 void updateSymbolVal(char symbol, int val);
 void multiple_print(int num, ...);
 extern FILE * yyin;
@@ -61,7 +64,7 @@ FILE* out;
 
 %%
 
-start_state : {OUTS("int main (int argc, char* argv[]) {\n");} statements {OUTS("return 0;\n}");exit(EXIT_SUCCESS);}
+start_state : {table = make_tree(NULL);OUTS("int main (int argc, char* argv[]) {\n");} statements {OUTS("return 0;\n}");exit(EXIT_SUCCESS);}
             ;
 
 statements  : assign  statements    {printf("YACC: statements assign\n");}
@@ -71,7 +74,7 @@ statements  : assign  statements    {printf("YACC: statements assign\n");}
             | continue_token {OUTS("continue;\n");} statements           {printf("YACC: statements continue_token\n");}
             ;
 
-assign      :  identifire  '='  expr       {printf("eval location\n");printf("%s", calculate($<data>3));printf("%s = %s;\n",$1,$<data>3->tmp);multiple_print(5,calculate($<data>3),$1," = ",$<data>3->tmp,";\n");}
+assign      :  identifire  '='  expr       {insertIdIfnotExist($<id>1);multiple_print(5,calculate($<data>3,table),$1," = ",$<data>3->tmp,";\n");}
             | {;} identifire {;} sadder expr     {OUTDV($2);OUTS($2);OUTS(" += ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign sadder expr\n");}
             | {;} identifire {;} ssubber expr    {OUTDV($2);OUTS($2);OUTS(" -= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign ssubber expr\n");}
             | {;} identifire {;} smult expr      {OUTDV($2);OUTS($2);OUTS(" *= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign smult expr\n");}
@@ -138,22 +141,23 @@ void multiple_print(int num, ...)
     va_end(valist);
   
 }
+void insertIdIfnotExist(char * theId){
+    if(find_by_id_in_tree(table,theId) == NULL){
+        insert_in_tree_if_not_exist(table,theId);
+        multiple_print(3,"double ",theId,";\n");
+        }
+}
 
 
 int main (int argc, char* argv[]) {
     if(argc > 1)
     {
-        printf("HI5\n");
     	yyin = fopen(argv[1], "r");
-        printf("HI4\n");
     }
     else
         printf("YACC: no file input\n");
-    printf("HI\n");
     out = fopen("result.c", "w");
-    printf("HI2\n");
     return yyparse ();
-    printf("HI3\n");
 }
 
 void yyerror (char *s) {fprintf (stderr, "ERR: %s\n", s);}
