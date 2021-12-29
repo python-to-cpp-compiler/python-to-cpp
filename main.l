@@ -1,5 +1,6 @@
 %option noyywrap
 %{
+	#include <string.h>
 	#include "y.tab.h"
 	#define DEBUG_MODE
 	int yylex();
@@ -260,16 +261,3 @@ string \"(.)*\"
 %%
 
 
-/* int main(int argc, char* argv[])
-{
-	// if(argc > 1)
-	// {
-	// 	FILE *fp = fopen(argv[1], "r");
-	// 	if(fp)
-	// 		yyin = fp;
-	// }
-
-	while (1)
-		yylex();
-	return 1;
-} */
