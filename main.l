@@ -140,7 +140,7 @@ string \"(.)*\"
 
 "+" {
 	#ifdef DEBUG_MODE
-		//std::cout <<" sum found " );
+		printf("plus found " );
 	#endif
 		return '+';
 		}
@@ -232,7 +232,9 @@ string \"(.)*\"
 }
 
 {identifire} {
+	printf("LEX HI1\n");
 
+	yylval.id = (char*)malloc(sizeof(char)*(strlen(yytext)+3));
 	strcpy(yylval.id, yytext);
 
 	#ifdef DEBUG_MODE

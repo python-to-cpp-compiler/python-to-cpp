@@ -2,18 +2,20 @@
 void yyerror (char *s);
 int yylex();
 int countDigit(long number2);
-void createTemp(char* temp);
+char* createTemp();
 void rest_temp();
 
 #include <stdio.h>     /* C declarations used in actions */
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "structures.h"
+
 #define OUTD(X) fprintf(out, "%f", X)
 #define OUTS(X) fprintf(out, "%s", X)
 #define OUTN() fprintf(out, "\n")
 #define OUTT() fprintf(out, "t%d", make_new_id())
-#define OUTDV(X) fprintf(out, "double %s ;",X)
+#define OUTDV(X) fprintf(out, "double %s;\n",X)
 
 int symbols[52];
 int symbolVal(char symbol);
@@ -22,7 +24,7 @@ extern FILE * yyin;
 FILE* out;
 %}
 
-%union {double num; char *id;}         /* Yacc definitions */
+%union {struct CalcList* data; double num; char* id;}         /* Yacc definitions */
 
 %start start_state
 
@@ -53,100 +55,70 @@ FILE* out;
 %token <num> number
 %token <id> identifire
 
-%type <id> expr factor term relo relop rel
+%type <data> expr factor term
 
 
 %%
 
-start_state : statements {;}
+start_state : {printf("HI25\n");printf("HI26\n");}statements {;}
             ;
 
-statements  : assign {OUTS(";");} statements    {printf("YACC: statements assign\n");}
-            | relops {OUTS(";");} statements    {printf("YACC: statements relop\n");}
-            | if_token_state statements                 {printf("YACC: statements if_token\n");}
-            | for_token_state statements                {printf("YACC: statements for_token\n");}
-            | while_token_state statements              {printf("YACC: statements while_token\n");}
-            | new_line {OUTN();} statements           {printf("YACC: statements new_line\n");}
-            | end_of_file                   {printf("YACC: statements end of file");exit(EXIT_SUCCESS);}
-            | break_token {OUTS(";");} statements              {printf("YACC: statements break_token\n");}
-            | continue_token {OUTS(";");} statements           {printf("YACC: statements continue_token\n");}
+statements  : {printf("HI30\n");fflush(stdout);} assign {OUTS(";");} statements    {printf("YACC: statements assign\n");}
+            | {printf("HI31\n");} new_line {OUTN();} statements           {printf("YACC: statements new_line\n");}
+            | {printf("HI32\n");} end_of_file                   {printf("YACC: statements end of file");exit(EXIT_SUCCESS);}
+            | {printf("HI33\n");} break_token {OUTS("break");OUTS(";");} statements              {printf("YACC: statements break_token\n");}
+            | {printf("HI34\n");} continue_token {OUTS(";");} statements           {printf("YACC: statements continue_token\n");}
             ;
 
-assign      : identifire '='  expr       {OUTDV($1);OUTS($1);OUTS(" = ");rest_temp();OUTS($3);OUTS(";");OUTN();}       {printf("YACC: assign id = exp\n");}
-            | identifire sadder expr     {OUTDV($1);OUTS($1);OUTS(" += ");rest_temp();OUTS($3);OUTS(";");OUTN();}      {printf("YACC: assign sadder expr\n");}
-            | identifire ssubber expr    {OUTDV($1);OUTS($1);OUTS(" -= ");rest_temp();OUTS($3);OUTS(";");OUTN();}      {printf("YACC: assign ssubber expr\n");}
-            | identifire smult expr      {OUTDV($1);OUTS($1);OUTS(" *= ");rest_temp();OUTS($3);OUTS(";");OUTN();}      {printf("YACC: assign smult expr\n");}
-            | identifire sdivd expr      {OUTDV($1);OUTS($1);OUTS(" /= ");rest_temp();OUTS($3);OUTS(";");OUTN();}      {printf("YACC: assign sdivd expr\n");}
+assign      : {printf("HI40\n");fflush(stdout);} identifire {printf("HI50\n");fflush(stdout);} '='  expr       {printf("HEEEEEEEEEEEREEEEEEEEEEEEEEEEEEE\n");printf("%s", calculate($<data>5));}       {printf("YACC: assign id = exp\n");}
+            | {printf("HI41\n");fflush(stdout);} identifire {printf("HI51\n");fflush(stdout);} sadder expr     {OUTDV($2);OUTS($2);OUTS(" += ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign sadder expr\n");}
+            | {printf("HI42\n");fflush(stdout);} identifire {printf("HI52\n");fflush(stdout);} ssubber expr    {OUTDV($2);OUTS($2);OUTS(" -= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign ssubber expr\n");}
+            | {printf("HI43\n");fflush(stdout);} identifire {printf("HI53\n");fflush(stdout);} smult expr      {OUTDV($2);OUTS($2);OUTS(" *= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign smult expr\n");}
+            | {printf("HI44\n");fflush(stdout);} identifire {printf("HI54\n");fflush(stdout);} sdivd expr      {OUTDV($2);OUTS($2);OUTS(" /= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign sdivd expr\n");}
             ;
 
-expr        : expr '+'  term  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" + ");OUTS($3);OUTS(";");OUTN();}   {printf("YACC: expr + term\n");}
-            | expr '-'  term  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" - ");OUTS($3);OUTS(";");OUTN();}   {printf("YACC: expr - term\n");}
-            | term            {printf("YACC: expr term\n");}
+expr        : expr '+'  term   {$<data>$ = insert($<data>1, "+", $<data>3, 0, NULL, createTemp()); printf("calculate+: %s", calculate($<data>$));} {printf("YACC: expr + term\n");}
+            | expr '-'  term   {$<data>$ = insert($<data>1, "-", $<data>3, 0, NULL, createTemp());} {printf("YACC: expr - term\n");}
+            | term             {$<data>$ = $<data>1;} {printf("YACC: expr term\n");}
             ;
 
-term        : term '*'  factor  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" * ");OUTS($3);OUTS(";");OUTN();}  {printf("YACC: term * factor\n");}
-            | term '/'  factor  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" / ");OUTS($3);OUTS(";");OUTN();}  {printf("YACC: term / factor\n");}
-            | factor                         {printf("YACC: term factor\n");}
+term        : term '*'  factor   {$<data>$ = insert($<data>1, "*", $<data>3, 0, NULL, createTemp());} {printf("YACC: term * factor\n");}
+            | term '/'  factor   {$<data>$ = insert($<data>1, "/", $<data>3, 0, NULL, createTemp());} {printf("YACC: term / factor\n");}
+            | factor             {$<data>$ = $<data>1;} {printf("YACC: term factor\n");}
             ;
 
-factor      : {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");} value {OUTS(";");OUTN();} {printf("YACC: factor value\n");}
-            | '('  expr ')' {$<id>$ = $<id>2;}                                          {printf("YACC: factor (expr)\n");}
+factor      :  value {$<data>$ = $<data>1;printf("HI62\n");}                                 {printf("YACC: factor value\n");}
+            | '('  expr ')' {$<data>$ = $<data>2;}                                          {printf("YACC: factor (expr)\n");}
             ;
 
-value       : number                          {OUTD($1); printf("YACC: value digit\n");}
-            | identifire                      {OUTS($1); printf("YACC: value id\n");}
-            ;
-
-if_token_state    : if_token relops ':' '{'  {OUTS("if( ");OUTS($<id>2);OUTS(" ) {");}  statements '}'{OUTS("}");OUTN();} else_token_state    {printf("YACC: if_token if_token\n");}
-            ;
-
-else_token_state  : else_token ':' {OUTS("else { ");OUTN();} '{'  statements '}'   {OUTS("}");OUTN();} {printf("YACC: else_token else_token\n");}
-            | {printf("YACC: else_token not else_token\n");}
-            ;
-
-while_token_state : while_token relops ':' '{' statements '}'      {printf("YACC: while_token while_token\n");}
-            ;
-
-for_token_state   : for_token identifire in_token range '(' expr ',' expr ',' expr ')' ':' {OUTDV($2);OUTS("for( ");OUTS($2);OUTS(" = ");OUTS($6);OUTS(" ; "); OUTS($2);OUTS(" < ");OUTS($8);OUTS(" ; ");OUTS($2);OUTS(" += ");OUTS($10);OUTS("{");} '{' statements '}' {OUTS("}");OUTN();}  {printf("YACC: for_token for_token\n");}
-            ;
-
-relops      : relop              {$<id>$ = $1;}                                         {printf("YACC: relops relop\n");}
-            | relop and  relops  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($<id>1);OUTS(" && ");OUTS($<id>3);OUTS(" ;");OUTN();}                            {printf("YACC: relops relop and\n");}
-            | relop or   relops  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($<id>1);OUTS(" || ");OUTS($<id>3);OUTS(" ;");OUTN();}                               {printf("YACC: relops relop or\n");}
-            | '(' relops ')'     {$<id>$ = $<id>2;}                                         {printf("YACC: relops (relops)\n");}
-            ;
-
-relop       : not {OUTS("!");} relo  {$<id>$ = $<id>2;}                       {printf("YACC: relop not relop\n");}
-            | relo   {$<id>$ = $<id>1;}                                       {printf("YACC: relop relo\n");}
-            ;
-
-relo        : expr rel expr  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($<id>1);OUTS($<id>2);OUTS($<id>3);OUTS(" ;");OUTN();}                                {printf("YACC: relo expr rel expr\n");}
-            ;
-
-rel         : eq   {$<id>$ = $<id>1;}                                          {printf("YACC: rel ==\n");}
-            | gteq {$<id>$ = $<id>1;}                                          {printf("YACC: rel >=\n");}
-            | lseq {$<id>$ = $<id>1;}                                          {printf("YACC: rel <=\n");}
-            | gt   {$<id>$ = $<id>1;}                                          {printf("YACC: rel >\n");}
-            | ls   {$<id>$ = $<id>1;}                                          {printf("YACC: rel <\n");}
-            | neq  {$<id>$ = $<id>1;}                                          {printf("YACC: rel !=\n");}
+value       : number                          {$<data>$ = insert(NULL, NULL, NULL, $<num>1, NULL, createTemp()); printf("YACC: value digit\n");}
+            | identifire                      {printf("HI80\n");$<data>$ = insert(NULL, NULL, NULL, 0, $<id>1, createTemp()); printf("YACC: value id\n");}
             ;
 
 
 %%                     /* C code */
 long temp_counter = 0;
 int countDigit(long number2){
+    printf("HI20\n");
     int count = 0;
     while(number2 != 0){
         number2 /= 10 ;
         count++;
     }
+    printf("HI21\n");
     return count;
 }
-void createTemp(char* temp){
+char* createTemp(){
+    char* temp;
+    printf("HI10\n");
     int temp_size = countDigit(temp_counter) + 3;
-    temp = malloc(sizeof(char) * (temp_size));
-    sprintf(temp,"t%ld",temp_counter);
+    temp = (char*)malloc(sizeof(char) * (temp_size));
+    sprintf(temp,"t%ld\0",temp_counter);
     temp_counter++;
+    printf("HI11\n");
+    printf("tmp: %s, %d\n", temp, temp_size);
+    printf("address: %p\n", temp);
+    return temp;
 }
 
 void rest_temp(){
