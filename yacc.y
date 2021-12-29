@@ -55,8 +55,6 @@ FILE* out;
 
 %type <id> expr factor term relops relop relo rel
 
-/* %type <num> line exp term
-%type <id> assignment */
 
 %%
 
@@ -109,7 +107,7 @@ else_token_state  : else_token ':' {OUTS("else { ");OUTN();} '{'  statements '}'
 while_token_state : while_token relops ':' '{' statements '}'      {printf("YACC: while_token while_token\n");}
             ;
 
-for_token_state   : for_token identifire in_token range '(' expr ',' expr ',' expr ')' ':' {OUTDV($2);OUTS("for( ");OUTS($2);OUTS(" = ");OUTS($6);OUTS(" ; "); OUTS($2);OUTS(" < ");OUTS($8);OUTS(" ; ");OUTS($2);OUTS(" += ");OUTS($10);OUTS("{")} '{' statements '}{'OUTS("}");OUTN();}  {printf("YACC: for_token for_token\n");}
+for_token_state   : for_token identifire in_token range '(' expr ',' expr ',' expr ')' ':' {OUTDV($2);OUTS("for( ");OUTS($2);OUTS(" = ");OUTS($6);OUTS(" ; "); OUTS($2);OUTS(" < ");OUTS($8);OUTS(" ; ");OUTS($2);OUTS(" += ");OUTS($10);OUTS("{")} '{' statements '}' {OUTS("}");OUTN();}  {printf("YACC: for_token for_token\n");}
             ;
 
 relops      : relop              {$$ = $1;}                                         {printf("YACC: relops relop\n");}
