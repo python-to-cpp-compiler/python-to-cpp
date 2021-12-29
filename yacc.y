@@ -1,7 +1,7 @@
 %{
 void yyerror (char *s);
 int yylex();
-int countDigit(long number);
+int countDigit(long number2);
 void createTemp(char* temp);
 void rest_temp();
 
@@ -22,7 +22,7 @@ extern FILE * yyin;
 FILE* out;
 %}
 
-%union {double num; char id[100];}         /* Yacc definitions */
+%union {double num; char *id;}         /* Yacc definitions */
 
 %start start_state
 
@@ -53,7 +53,7 @@ FILE* out;
 %token <num> number
 %token <id> identifire
 
-%type <id> expr factor term relops relop relo rel
+%type <id> expr factor term relo relop rel
 
 
 %%
@@ -79,25 +79,25 @@ assign      : identifire '='  expr       {OUTDV($1);OUTS($1);OUTS(" = ");rest_te
             | identifire sdivd expr      {OUTDV($1);OUTS($1);OUTS(" /= ");rest_temp();OUTS($3);OUTS(";");OUTN();}      {printf("YACC: assign sdivd expr\n");}
             ;
 
-expr        : expr '+'  term  {createTemp($$);OUTDV($$);OUTS($$);OUTS(" = ");OUTS($1);OUTS(" + ");OUTS($3);OUTS(";");OUTN();}   {printf("YACC: expr + term\n");}
-            | expr '-'  term  {createTemp($$);OUTDV($$);OUTS($$);OUTS(" = ");OUTS($1);OUTS(" - ");OUTS($3);OUTS(";");OUTN();}   {printf("YACC: expr - term\n");}
+expr        : expr '+'  term  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" + ");OUTS($3);OUTS(";");OUTN();}   {printf("YACC: expr + term\n");}
+            | expr '-'  term  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" - ");OUTS($3);OUTS(";");OUTN();}   {printf("YACC: expr - term\n");}
             | term            {printf("YACC: expr term\n");}
             ;
 
-term        : term '*'  factor  {createTemp($$);OUTDV($$);OUTS($$);OUTS(" = ");OUTS($1);OUTS(" * ");OUTS($3);OUTS(";");OUTN();}  {printf("YACC: term * factor\n");}
-            | term '/'  factor  {createTemp($$);OUTDV($$);OUTS($$);OUTS(" = ");OUTS($1);OUTS(" / ");OUTS($3);OUTS(";");OUTN();}  {printf("YACC: term / factor\n");}
+term        : term '*'  factor  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" * ");OUTS($3);OUTS(";");OUTN();}  {printf("YACC: term * factor\n");}
+            | term '/'  factor  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($1);OUTS(" / ");OUTS($3);OUTS(";");OUTN();}  {printf("YACC: term / factor\n");}
             | factor                         {printf("YACC: term factor\n");}
             ;
 
-factor      : {createTemp($$);OUTDV($$);OUTS($$);OUTS(" = ");} value {OUTS(";");OUTN();} {printf("YACC: factor value\n");}
-            | '('  expr ')' {$$ = $2}                                          {printf("YACC: factor (expr)\n");}
+factor      : {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");} value {OUTS(";");OUTN();} {printf("YACC: factor value\n");}
+            | '('  expr ')' {$<id>$ = $<id>2;}                                          {printf("YACC: factor (expr)\n");}
             ;
 
 value       : number                          {OUTD($1); printf("YACC: value digit\n");}
             | identifire                      {OUTS($1); printf("YACC: value id\n");}
             ;
 
-if_token_state    : if_token relops ':' '{'  {OUTS("if( ");OUTS($2);OUTS(" ) {");}  statements '}'{OUTS("}");OUTN();} else_token_state    {printf("YACC: if_token if_token\n");}
+if_token_state    : if_token relops ':' '{'  {OUTS("if( ");OUTS($<id>2);OUTS(" ) {");}  statements '}'{OUTS("}");OUTN();} else_token_state    {printf("YACC: if_token if_token\n");}
             ;
 
 else_token_state  : else_token ':' {OUTS("else { ");OUTN();} '{'  statements '}'   {OUTS("}");OUTN();} {printf("YACC: else_token else_token\n");}
@@ -107,37 +107,37 @@ else_token_state  : else_token ':' {OUTS("else { ");OUTN();} '{'  statements '}'
 while_token_state : while_token relops ':' '{' statements '}'      {printf("YACC: while_token while_token\n");}
             ;
 
-for_token_state   : for_token identifire in_token range '(' expr ',' expr ',' expr ')' ':' {OUTDV($2);OUTS("for( ");OUTS($2);OUTS(" = ");OUTS($6);OUTS(" ; "); OUTS($2);OUTS(" < ");OUTS($8);OUTS(" ; ");OUTS($2);OUTS(" += ");OUTS($10);OUTS("{")} '{' statements '}' {OUTS("}");OUTN();}  {printf("YACC: for_token for_token\n");}
+for_token_state   : for_token identifire in_token range '(' expr ',' expr ',' expr ')' ':' {OUTDV($2);OUTS("for( ");OUTS($2);OUTS(" = ");OUTS($6);OUTS(" ; "); OUTS($2);OUTS(" < ");OUTS($8);OUTS(" ; ");OUTS($2);OUTS(" += ");OUTS($10);OUTS("{");} '{' statements '}' {OUTS("}");OUTN();}  {printf("YACC: for_token for_token\n");}
             ;
 
-relops      : relop              {$$ = $1;}                                         {printf("YACC: relops relop\n");}
-            | relop and  relops  {createTemp($$);OUTDV($$);OUTS("OUTS("$$");");OUTS(" = ");OUTS("$1");OUTS(" && ");OUTS("$3");OUTS(" ;");OUTN();}                            {printf("YACC: relops relop and\n");}
-            | relop or   relops  {createTemp($$);OUTDV($$);OUTS("OUTS("$$");");OUTS(" = ");OUTS("$1");OUTS(" || ");OUTS("$3");OUTS(" ;");OUTN();}                               {printf("YACC: relops relop or\n");}
-            | '(' relops ')'     {$$ = $2;}                                         {printf("YACC: relops (relops)\n");}
+relops      : relop              {$<id>$ = $1;}                                         {printf("YACC: relops relop\n");}
+            | relop and  relops  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($<id>1);OUTS(" && ");OUTS($<id>3);OUTS(" ;");OUTN();}                            {printf("YACC: relops relop and\n");}
+            | relop or   relops  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($<id>1);OUTS(" || ");OUTS($<id>3);OUTS(" ;");OUTN();}                               {printf("YACC: relops relop or\n");}
+            | '(' relops ')'     {$<id>$ = $<id>2;}                                         {printf("YACC: relops (relops)\n");}
             ;
 
-relop       : not {OUTS("!");} relo  {$$ = $2}                       {printf("YACC: relop not relop\n");}
-            | relo   {$$ = $1;}                                       {printf("YACC: relop relo\n");}
+relop       : not {OUTS("!");} relo  {$<id>$ = $<id>2;}                       {printf("YACC: relop not relop\n");}
+            | relo   {$<id>$ = $<id>1;}                                       {printf("YACC: relop relo\n");}
             ;
 
-relo        : expr rel expr  {createTemp($$);OUTDV($$);OUTS("OUTS("$$");");OUTS(" = ");OUTS("$1");OUTS($2);OUTS("$3");OUTS(" ;");OUTN();}                                {printf("YACC: relo expr rel expr\n");}
+relo        : expr rel expr  {createTemp($<id>$);OUTDV($<id>$);OUTS($<id>$);OUTS(" = ");OUTS($<id>1);OUTS($<id>2);OUTS($<id>3);OUTS(" ;");OUTN();}                                {printf("YACC: relo expr rel expr\n");}
             ;
 
-rel         : eq   {$$ = $1;}                                          {printf("YACC: rel ==\n");}
-            | gteq {$$ = $1;}                                          {printf("YACC: rel >=\n");}
-            | lseq {$$ = $1;}                                          {printf("YACC: rel <=\n");}
-            | gt   {$$ = $1}                                          {printf("YACC: rel >\n");}
-            | ls   {$$ = $1}                                          {printf("YACC: rel <\n");}
-            | neq  {$$ = $1;}                                          {printf("YACC: rel !=\n");}
+rel         : eq   {$<id>$ = $<id>1;}                                          {printf("YACC: rel ==\n");}
+            | gteq {$<id>$ = $<id>1;}                                          {printf("YACC: rel >=\n");}
+            | lseq {$<id>$ = $<id>1;}                                          {printf("YACC: rel <=\n");}
+            | gt   {$<id>$ = $<id>1;}                                          {printf("YACC: rel >\n");}
+            | ls   {$<id>$ = $<id>1;}                                          {printf("YACC: rel <\n");}
+            | neq  {$<id>$ = $<id>1;}                                          {printf("YACC: rel !=\n");}
             ;
 
 
 %%                     /* C code */
 long temp_counter = 0;
-int countDigit(long number){
+int countDigit(long number2){
     int count = 0;
-    while(number != 0){
-        number /= 10 ;
+    while(number2 != 0){
+        number2 /= 10 ;
         count++;
     }
     return count;
@@ -145,7 +145,7 @@ int countDigit(long number){
 void createTemp(char* temp){
     int temp_size = countDigit(temp_counter) + 3;
     temp = malloc(sizeof(char) * (temp_size));
-    sprintf(temp,"t%ld",temp_size);
+    sprintf(temp,"t%ld",temp_counter);
     temp_counter++;
 }
 
@@ -157,12 +157,17 @@ void rest_temp(){
 int main (int argc, char* argv[]) {
     if(argc > 1)
     {
+        printf("HI5\n");
     	yyin = fopen(argv[1], "r");
+        printf("HI4\n");
     }
     else
         printf("YACC: no file input\n");
+    printf("HI\n");
     out = fopen("result.c", "w");
+    printf("HI2\n");
     return yyparse ();
+    printf("HI3\n");
 }
 
 void yyerror (char *s) {fprintf (stderr, "ERR: %s\n", s);}
