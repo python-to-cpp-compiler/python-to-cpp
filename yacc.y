@@ -55,6 +55,7 @@ FILE* out;
 %token break_token
 %token continue_token
 %token in_token
+%token range_token
 %token exit_command
 %token <num> number
 %token <id> identifire
@@ -67,23 +68,44 @@ FILE* out;
 start_state : {table = make_tree(NULL);OUTS("int main (int argc, char* argv[]) {\n");} statements {OUTS("return 0;\n}");exit(EXIT_SUCCESS);}
             ;
 
-statements  : assign  statements    {printf("YACC: statements assign\n");}
-            | new_line {OUTN();} statements           {printf("YACC: statements new_line\n");}
-            | end_of_file   {printf("YACC: statements end of file");}
-            | break_token {OUTS("break;\n");} statements              {printf("YACC: statements break_token\n");}
-            | continue_token {OUTS("continue;\n");} statements           {printf("YACC: statements continue_token\n");}
+statements  : state  statements            
+            | end_of_file   
             ;
 
-assign      :  identifire  '='  expr       {insertIdIfnotExist($<id>1);multiple_print(5,calculate($<data>3,table),$1," = ",$<data>3->tmp,";\n");}
-            | {;} identifire {;} sadder expr     {OUTDV($2);OUTS($2);OUTS(" += ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign sadder expr\n");}
-            | {;} identifire {;} ssubber expr    {OUTDV($2);OUTS($2);OUTS(" -= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign ssubber expr\n");}
-            | {;} identifire {;} smult expr      {OUTDV($2);OUTS($2);OUTS(" *= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign smult expr\n");}
-            | {;} identifire {;} sdivd expr      {OUTDV($2);OUTS($2);OUTS(" /= ");OUTS($5);OUTS(";");OUTN();}      {printf("YACC: assign sdivd expr\n");}
+
+state : assign {printf("YACC: state assign\n");}
+      | new_line {OUTN();}  {printf("YACC: state new_line\n");}
+      | break_token {OUTS("break;\n");} {printf("YACC: state break_token\n");}
+      | continue_token {OUTS("continue;\n");} {printf("YACC: state continue_token\n");}
+      | if_statment {printf("YACC: state if\n");}
+      | for_token_state {printf("YACC: state for\n");}
+      | while_token_state {printf("YACC: state while\n");}
+      ;
+inside_statements  : state  inside_statements             
+                   | '}'     {printf("YACC: inside statements }");}
+                   ;
+
+assign      :  identifire  assignment  expr       {insertIdIfnotExist($<id>1);multiple_print(7,calculate($<data>3,table),$1," ",$<id>2," ",$<data>3->tmp,";\n");}
+            ;
+
+else_statment : else_token ':' '{' {printf("it's if else \n");multiple_print(1,"else {\n");table = make_tree(table);} inside_statements {OUTS("}\n");table = goto_parent(table);}
+              | {printf("it's if \n");}
+              ;
+
+if_statment   : if_token  relops {multiple_print(4,calculate($<data>2,table),"if(",$<data>2->tmp,"){\n");table = make_tree(table);}':' '{' inside_statements {OUTS("}\n");table = goto_parent(table);} else_statment 
+              ;
+
+
+assignment  : '='         {$<id>$ = "=";}
+            | sadder      {$<id>$ = "+=";}     
+            | ssubber     {$<id>$ = "-=";}       
+            | smult       {$<id>$ = "*=";}       
+            | sdivd       {$<id>$ = "/=";}       
             ;
 
 expr        : expr '+'  term   {$<data>$ = insert($<data>1, $<data>3,"+", 0, NULL, createTemp());}
             | expr '-'  term   {$<data>$ = insert($<data>1,  $<data>3,"-", 0, NULL, createTemp());} 
-            | term             {$<data>$ = $<data>1;} {printf("YACC: expr term\n");}
+            | term             {$<data>$ = $<data>1;} 
             ;
 
 term        : term '*'  factor   {$<data>$ = insert($<data>1, $<data>3,"*",  0, NULL, createTemp());}
@@ -97,6 +119,34 @@ factor      :  value {$<data>$ = $<data>1;}
 
 value       : number                          {$<data>$ = insert(NULL, NULL, NULL, $<num>1, NULL, createTemp());}
             | identifire                      {$<data>$ = insert(NULL, NULL, NULL, 0, $<id>1, createTemp()); }
+            ;
+
+relops      : relop                           {$<data>$ = $<data>1;}
+            | relop and  relops               {$<data>$ = insert($<data>1, $<data>3,"&&", 0, NULL, createTemp());}
+            | relop or  relops                {$<data>$ = insert($<data>1, $<data>3,"||", 0, NULL, createTemp());}
+            | '('   relops ')'                {$<data>$ = $<data>2;}
+            ;
+
+relop       : not  relop                      {$<data>$ = insert($<data>2, NULL,"!", 0, NULL, createTemp());}
+            | relo                            {$<data>$ = $<data>1;}
+            ;
+
+relo        : expr rel expr                   {$<data>$ = insert($<data>1, $<data>3, $<id>2, 0, NULL, createTemp());}
+            ;
+
+rel         : eq   {$<id>$ = "==";}                                          
+            | gteq {$<id>$ = ">=";}                                         
+            | lseq {$<id>$ = "<=";}                                          
+            | gt   {$<id>$ = ">";}                                         
+            | ls   {$<id>$ = "<";}                                          
+            | neq  {$<id>$ = "!=";}                                          
+            ;
+
+
+for_token_state         : for_token identifire in_token range_token '(' expr ',' expr ',' expr ')' ':' '{' {insertIdIfnotExist($2);multiple_print(18,calculate($<data>6,table),calculate($<data>8,table),calculate($<data>10,table),"for(",$2," = ",$<data>6->tmp,"; ",$2," < ",$<data>8->tmp," ;",$2,"=",$2," + ",$<data>10->tmp,"){\n");table = make_tree(table);} inside_statements {OUTS("}\n");table = goto_parent(table);}
+            ;
+
+while_token_state : while_token relops ':' '{' {multiple_print(4,calculate($<data>2,table),"while(",$<data>2->tmp,"){\n");table = make_tree(table);} inside_statements   {multiple_print(2,calculate($<data>2,table),"}\n");table = goto_parent(table);}    
             ;
 
 

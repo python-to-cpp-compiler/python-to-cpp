@@ -27,13 +27,13 @@ string \"(.)*\"
 
 "(" {
 	#ifdef DEBUG_MODE
-		/* printf("open parantez found " ); */
+		printf("open parantez found " ); 
 	#endif
 		return '(';
 	}
 ")" {
 	#ifdef DEBUG_MODE
-		/* printf("close parantez found " ); */
+		printf("close parantez found " ); 
 	#endif
 		return ')';
 	}
@@ -55,7 +55,12 @@ string \"(.)*\"
 	#endif
 		return ':';
 	}
-
+"," {
+	#ifdef DEBUG_MODE
+		printf(", found " );
+	#endif
+		return ',';
+}
 
 
 "!=" {
@@ -219,7 +224,12 @@ string \"(.)*\"
 	#endif
 		return not;
 		}
-
+"range" {
+	#ifdef DEBUG_MODE
+		printf(" range  found " );
+	#endif
+		return range_token;
+		}
 
 
 {the_double} {

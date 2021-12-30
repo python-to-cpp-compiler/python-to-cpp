@@ -54,7 +54,7 @@ char* calculate(struct CalcList* calc,struct Tree* tree) {
     char* doubleDeclartion = "";
     int size = 0;
     char* res;
-
+    
     
     if (calc->op == NULL) {
         if(find_by_id_in_tree(tree,calc->tmp) == NULL){
@@ -89,6 +89,25 @@ char* calculate(struct CalcList* calc,struct Tree* tree) {
         return res;
     }
 
+    if (strcmp(calc->op,"!") == 0)
+    {
+        char *r1 = calculate(calc->left,tree);
+        size = strlen(r1)  + strlen(calc->left->tmp) + strlen(calc->op) + strlen(calc->tmp) + 10;
+        if(find_by_id_in_tree(tree,calc->tmp) == NULL){
+            insert_in_tree_if_not_exist(tree,calc->tmp);
+            doubleDeclartion = "double ";
+            size += 10;
+        }
+        res = (char*)malloc(sizeof(char)*size);
+        
+        res[0] = 0;
+
+        sprintf(res, "%s%s %s = %s %s;\n", r1, doubleDeclartion,calc->tmp,  calc->op, calc->left->tmp);
+
+        return res;
+    }
+    
+
     char *r1 = calculate(calc->left,tree);
     char *r2 = calculate(calc->right,tree);
 
@@ -111,27 +130,28 @@ char* calculate(struct CalcList* calc,struct Tree* tree) {
 }
 
 void help_print_CalcList(struct CalcList* calc){
-    printf("left : %p \n right : %p ",calc->left,calc->right);
+    printf("left : %p \n right : %p\n",calc->left,calc->right);
     if(calc->op == NULL){
-        printf("op is null");
+        printf("op is null\n");
     }else{
-        printf("op is %s",calc->op);
+        printf("op is %s\n",calc->op);
     }
     if(calc->tmp == NULL){
-        printf("tmp is null");
+        printf("tmp is null\n");
     }else{
-        printf("tmp is %s",calc->tmp);
+        printf("tmp is %s\n",calc->tmp);
     }
     if(calc->id == NULL){
-        printf("id is null");
+        printf("id is null\n");
     }else{
-        printf("id is %s",calc->id);
+        printf("id is %s\n",calc->id);
     }
     if(calc->value == 0){
-        printf("value is 0");
+        printf("value is 0\n");
     }else{
-        printf("value is %f",calc->value);
+        printf("value is %f\n",calc->value);
     }
+    printf("==============================================\n");
 }
 
 
