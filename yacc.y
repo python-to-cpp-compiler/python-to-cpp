@@ -57,6 +57,8 @@ FILE* out;
 %token in_token
 %token range_token
 %token exit_command
+%token print_token
+
 %token <num> number
 %token <id> identifire
 
@@ -65,11 +67,11 @@ FILE* out;
 
 %%
 
-start_state : {table = make_tree(NULL);OUTS("int main (int argc, char* argv[]) {\n");} statements {OUTS("return 0;\n}");exit(EXIT_SUCCESS);}
+start_state : {table = make_tree(NULL);OUTS("#include <stdio.h>\nint main (int argc, char* argv[]) {\n");} statements {OUTS("return 0;\n}");exit(EXIT_SUCCESS);}
             ;
 
-statements  : state  statements            
-            | end_of_file   
+statements  : state  statements
+            | end_of_file
             ;
 
 
@@ -80,8 +82,12 @@ state : assign {printf("YACC: state assign\n");}
       | if_statment {printf("YACC: state if\n");}
       | for_token_state {printf("YACC: state for\n");}
       | while_token_state {printf("YACC: state while\n");}
+      | print_state         {printf("YACC: state print\n");}
       ;
-inside_statements  : state  inside_statements             
+
+print_state : print_token '(' expr ')' {multiple_print(4, calculate($<data>3, table), "printf(\"%f\\n\",", $<data>3->tmp, ");\n");}
+
+inside_statements  : state  inside_statements
                    | '}'     {printf("YACC: inside statements }");}
                    ;
 
@@ -94,29 +100,34 @@ else_statment : else_token ':' '{' {printf("it's if else \n");multiple_print(1,"
               | {printf("it's if \n");}
               ;
 
-if_statment   : if_token  relops {multiple_print(4,calculate($<data>2,table),"if(",$<data>2->tmp,"){\n");table = make_tree(table);}':' '{' inside_statements {OUTS("}\n");table = goto_parent(table);} else_statment 
+if_statment   : if_token  relops {multiple_print(4,calculate($<data>2,table),"if(",$<data>2->tmp,"){\n");table = make_tree(table);}':' '{' inside_statements {OUTS("}\n");table = goto_parent(table);} else_statment
               ;
 
 
 assignment  : '='         {$<id>$ = "=";}
-            | sadder      {$<id>$ = "+=";}     
-            | ssubber     {$<id>$ = "-=";}       
-            | smult       {$<id>$ = "*=";}       
-            | sdivd       {$<id>$ = "/=";}       
+            | sadder      {$<id>$ = "+=";}
+            | ssubber     {$<id>$ = "-=";}
+            | smult       {$<id>$ = "*=";}
+            | sdivd       {$<id>$ = "/=";}
             ;
 
 expr        : expr '+'  term   {$<data>$ = insert($<data>1, $<data>3,"+", 0, NULL, createTemp());}
-            | expr '-'  term   {$<data>$ = insert($<data>1,  $<data>3,"-", 0, NULL, createTemp());} 
-            | term             {$<data>$ = $<data>1;} 
+            | expr '-'  term   {$<data>$ = insert($<data>1,  $<data>3,"-", 0, NULL, createTemp());}
+            | term             {$<data>$ = $<data>1;}
             ;
 
-term        : term '*'  factor   {$<data>$ = insert($<data>1, $<data>3,"*",  0, NULL, createTemp());}
-            | term '/'  factor   {$<data>$ = insert($<data>1, $<data>3, "/", 0, NULL, createTemp());} 
-            | factor             {$<data>$ = $<data>1;} 
+term        : term '*'  signNumber   {$<data>$ = insert($<data>1, $<data>3,"*",  0, NULL, createTemp());}
+            | term '/'  signNumber   {$<data>$ = insert($<data>1, $<data>3, "/", 0, NULL, createTemp());}
+            | signNumber             {$<data>$ = $<data>1;}
             ;
 
-factor      :  value {$<data>$ = $<data>1;}                                 
-            | '('  expr ')' {$<data>$ = $<data>2;}                                         
+signNumber  : '+' factor    {$<data>$ = insert($<data>2, NULL, "un+", 0, NULL, createTemp());}
+            | '-' factor    {$<data>$ = insert($<data>2, NULL, "un-", 0, NULL, createTemp());}
+            | factor        {$<data>$ = $<data>1;}
+            ;
+
+factor      :  value {$<data>$ = $<data>1;}
+            | '('  expr ')' {$<data>$ = $<data>2;}
             ;
 
 value       : number                          {$<data>$ = insert(NULL, NULL, NULL, $<num>1, NULL, createTemp());}
@@ -136,19 +147,19 @@ relop       : not  relop                      {$<data>$ = insert($<data>2, NULL,
 relo        : expr rel expr                   {$<data>$ = insert($<data>1, $<data>3, $<id>2, 0, NULL, createTemp());}
             ;
 
-rel         : eq   {$<id>$ = "==";}                                          
-            | gteq {$<id>$ = ">=";}                                         
-            | lseq {$<id>$ = "<=";}                                          
-            | gt   {$<id>$ = ">";}                                         
-            | ls   {$<id>$ = "<";}                                          
-            | neq  {$<id>$ = "!=";}                                          
+rel         : eq   {$<id>$ = "==";}
+            | gteq {$<id>$ = ">=";}
+            | lseq {$<id>$ = "<=";}
+            | gt   {$<id>$ = ">";}
+            | ls   {$<id>$ = "<";}
+            | neq  {$<id>$ = "!=";}
             ;
 
 
 for_token_state         : for_token identifire in_token range_token '(' expr ',' expr ',' expr ')' ':' '{' {insertIdIfnotExist($2);multiple_print(18,calculate($<data>6,table),calculate($<data>8,table),calculate($<data>10,table),"for(",$2," = ",$<data>6->tmp,"; ",$2," < ",$<data>8->tmp," ;",$2,"=",$2," + ",$<data>10->tmp,"){\n");table = make_tree(table);} inside_statements {OUTS("}\n");table = goto_parent(table);}
             ;
 
-while_token_state : while_token relops ':' '{' {multiple_print(4,calculate($<data>2,table),"while(",$<data>2->tmp,"){\n");table = make_tree(table);} inside_statements   {multiple_print(2,calculate($<data>2,table),"}\n");table = goto_parent(table);}    
+while_token_state : while_token relops ':' '{' {multiple_print(4,calculate($<data>2,table),"while(",$<data>2->tmp,"){\n");table = make_tree(table);} inside_statements   {multiple_print(2,calculate($<data>2,table),"}\n");table = goto_parent(table);}
             ;
 
 
@@ -166,7 +177,7 @@ char* createTemp(){
     char* temp;
     int temp_size = countDigit(temp_counter) + 3;
     temp = (char*)malloc(sizeof(char) * (temp_size));
-    sprintf(temp,"t%ld\0",temp_counter);
+    sprintf(temp,"t%ld",temp_counter);
     temp_counter++;
     printf("tmp: %s, %d\n", temp, temp_size);
     printf("address: %p\n", temp);
@@ -180,18 +191,18 @@ void rest_temp(){
 void multiple_print(int num, ...)
 {
     va_list valist;
-  
+
     int  i;
     char* word;
     va_start(valist, num);
-    for (i = 0; i < num; i++){ 
+    for (i = 0; i < num; i++){
         word = va_arg(valist, char*);
         OUTS(word);
     }
 
-  
+
     va_end(valist);
-  
+
 }
 void insertIdIfnotExist(char * theId){
     if(find_by_id_in_tree(table,theId) == NULL){
@@ -208,7 +219,12 @@ int main (int argc, char* argv[]) {
     }
     else
         printf("YACC: no file input\n");
-    out = fopen("result.c", "w");
+    if(argc > 2)
+    {
+        out = fopen(argv[2], "w");
+    }
+    else
+        out = fopen("result.c", "w");
     return yyparse ();
 }
 

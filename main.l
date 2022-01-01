@@ -17,7 +17,7 @@ variable_alphabet [0-9a-zA-Z|_]
 
 new_line \n
 delim [ \t]+
-the_double ([+-])?{digit}+(\.{digit}+)?(E[+\-]?{digit}+)?
+the_double {digit}+(\.{digit}+)?(E[+\-]?{digit}+)?
 identifire {letter}{variable_alphabet}*
 string \"(.)*\"
 
@@ -27,13 +27,13 @@ string \"(.)*\"
 
 "(" {
 	#ifdef DEBUG_MODE
-		printf("open parantez found " ); 
+		printf("open parantez found " );
 	#endif
 		return '(';
 	}
 ")" {
 	#ifdef DEBUG_MODE
-		printf("close parantez found " ); 
+		printf("close parantez found " );
 	#endif
 		return ')';
 	}
@@ -242,6 +242,13 @@ string \"(.)*\"
 		return number;
 }
 
+"print" {
+	#ifdef DEBUG_MODE
+		printf("LEX: print\n");
+	#endif
+		return print_token;
+}
+
 {identifire} {
 	printf("LEX HI1\n");
 
@@ -269,5 +276,3 @@ string \"(.)*\"
 
 
 %%
-
-
