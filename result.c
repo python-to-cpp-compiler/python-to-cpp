@@ -1,53 +1,67 @@
+#include <stdio.h>
 int main (int argc, char* argv[]) {
+double c;
 double t0=3.000000;
-double t1=4.000000;
-double  t2 = t0 > t1;
-if(t2){
+double t1=5.000000;
+double  t2 = t0 * t1;
+double t3=4.000000;
+double  t4 = t2 - t3;
+c = t4;
+
+double t5=3.000000;
+double t6=4.000000;
+double  t7 = t5 > t6;
+if(t7){
 
 double a;
-double t3=2.000000;
-a = t3;
+double t8=2.000000;
+a = t8;
 
 }
 else {
 
 double b;
-double t4=8.000000;
-double t5=2.000000;
-double  t6 = t4 * t5;
-b -= t6;
+double t9=8.000000;
+double t10=2.000000;
+double  t11 = t9 * t10;
+b -= t11;
 
 }
 
 double i;
-double t7=4.000000;
-double t8=7.000000;
-double t9=1.000000;
-for(i = t7; i < t8 ;i=i + t9){
+double t12=4.000000;
+double t13=7.000000;
+double t14=1.000000;
+for(i = t12; i < t13 ;i=i + t14){
 
 double m;
-double t10=i;
-m = t10;
+double t15=i;
+m = t15;
 
 }
 
 double a;
-double t11=4.000000;
-a = t11;
+double t16=4.000000;
+a = t16;
 
-double t12=a;
-double t13=4.000000;
-double  t14 = t12 < t13;
-while(t14){
+double t17=a;
+double t18=4.000000;
+double  t19 = t17 < t18;
+while(t19){
 
-double t15=1.000000;
-a += t15;
+double t20=1.000000;
+a += t20;
 
-t12=a;
-t13=4.000000;
- t14 = t12 < t13;
+t17=a;
+t18=4.000000;
+ t19 = t17 < t18;
 }
 
+
+double t21=c;
+double t22=4.000000;
+double  t23 = t21 + t22;
+printf("%f\n",t23);
 
 return 0;
 }
