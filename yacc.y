@@ -98,6 +98,7 @@ rhandside   : expr      {$<data>$ = $<data>1;}
             ;
 
 else_statment : else_token ':' '{' {multiple_print(1,"else {\n");table = make_tree(table);} inside_statements {OUTS("}\n");table = goto_parent(table);}
+              | new_line else_statment
               | {;}
               ;
 
