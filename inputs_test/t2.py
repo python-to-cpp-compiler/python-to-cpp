@@ -1,7 +1,8 @@
 c = 3*5-4
 if c > 10 :{
     c += 2
-}else:{
+}
+else:{
     c -= 2
 }
 print(c)

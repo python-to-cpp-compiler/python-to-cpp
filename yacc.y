@@ -91,7 +91,10 @@ inside_statements  : state  inside_statements
                    | '}'
                    ;
 
-assign      :  identifire  assignment  expr       {insertIdIfnotExist($<id>1);multiple_print(7,calculate($<data>3,table),$1," ",$<id>2," ",$<data>3->tmp,";\n");}
+assign      :  identifire  assignment  rhandside       {insertIdIfnotExist($<id>1);multiple_print(7,calculate($<data>3,table),$1," ",$<id>2," ",$<data>3->tmp,";\n");}
+            ;
+rhandside   : expr      {$<data>$ = $<data>1;}
+            | relops    {$<data>$ = $<data>1;}
             ;
 
 else_statment : else_token ':' '{' {multiple_print(1,"else {\n");table = make_tree(table);} inside_statements {OUTS("}\n");table = goto_parent(table);}
