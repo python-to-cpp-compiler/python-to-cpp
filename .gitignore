@@ -3,3 +3,5 @@ y.tab.c
 y.tab.h
 project
 a.out
+results/*
+project.exe

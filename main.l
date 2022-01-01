@@ -2,7 +2,7 @@
 %{
 	#include <string.h>
 	#include "y.tab.h"
-	#define DEBUG_MODE
+	/* #define DEBUG_MODE */
 	int yylex();
 	void yyerror (char *s);
 
@@ -250,8 +250,6 @@ string \"(.)*\"
 }
 
 {identifire} {
-	printf("LEX HI1\n");
-
 	yylval.id = (char*)malloc(sizeof(char)*(strlen(yytext)+3));
 	strcpy(yylval.id, yytext);
 

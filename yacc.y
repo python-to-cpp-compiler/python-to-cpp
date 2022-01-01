@@ -75,27 +75,27 @@ statements  : state  statements
             ;
 
 
-state : assign {printf("YACC: state assign\n");}
-      | new_line {OUTN();}  {printf("YACC: state new_line\n");}
-      | break_token {OUTS("break;\n");} {printf("YACC: state break_token\n");}
-      | continue_token {OUTS("continue;\n");} {printf("YACC: state continue_token\n");}
-      | if_statment {printf("YACC: state if\n");}
-      | for_token_state {printf("YACC: state for\n");}
-      | while_token_state {printf("YACC: state while\n");}
-      | print_state         {printf("YACC: state print\n");}
+state : assign
+      | new_line {OUTN();}
+      | break_token {OUTS("break;\n");}
+      | continue_token {OUTS("continue;\n");}
+      | if_statment
+      | for_token_state
+      | while_token_state
+      | print_state
       ;
 
 print_state : print_token '(' expr ')' {multiple_print(4, calculate($<data>3, table), "printf(\"%f\\n\",", $<data>3->tmp, ");\n");}
 
 inside_statements  : state  inside_statements
-                   | '}'     {printf("YACC: inside statements }");}
+                   | '}'
                    ;
 
 assign      :  identifire  assignment  expr       {insertIdIfnotExist($<id>1);multiple_print(7,calculate($<data>3,table),$1," ",$<id>2," ",$<data>3->tmp,";\n");}
             ;
 
-else_statment : else_token ':' '{' {printf("it's if else \n");multiple_print(1,"else {\n");table = make_tree(table);} inside_statements {OUTS("}\n");table = goto_parent(table);}
-              | {printf("it's if \n");}
+else_statment : else_token ':' '{' {multiple_print(1,"else {\n");table = make_tree(table);} inside_statements {OUTS("}\n");table = goto_parent(table);}
+              | {;}
               ;
 
 if_statment   : if_token  relops {multiple_print(4,calculate($<data>2,table),"if(",$<data>2->tmp,"){\n");table = make_tree(table);}':' '{' inside_statements {OUTS("}\n");table = goto_parent(table);} else_statment
@@ -177,8 +177,6 @@ char* createTemp(){
     temp = (char*)malloc(sizeof(char) * (temp_size));
     sprintf(temp,"t%ld",temp_counter);
     temp_counter++;
-    printf("tmp: %s, %d\n", temp, temp_size);
-    printf("address: %p\n", temp);
     return temp;
 }
 
